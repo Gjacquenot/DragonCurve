@@ -76,7 +76,7 @@ def dragon_ter_curve(level=3):
 
 
 
-def demo(level=15, plotTerDragon=False, showAllLevel=False, filename=None):
+def dragon_curve_plot(level=15, plotTerDragon=False, showAllLevel=False, filename=None):
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     if plotTerDragon:
@@ -110,12 +110,6 @@ def demo2(level=15):
     fig, ax = plt.subplots()
     x, y = np.asarray(res[level][0]), np.asarray(res[level][1])
     ax.plot(x,y, linewidth=0.5)
-    # ax.plot(x+0.5,y+0.5, linewidth=0.5)
-    # xr,yr = rotVec(np.pi / 2 + np.pi / 4, x, y)
-    # ax.plot(xr,yr)
-    # ax.plot(x+1,y)
-    # ax.plot(x-1,y)
-    # ax.plot(x,y+2/3)
     plt.axis('equal')
     plt.show()
 
@@ -143,20 +137,30 @@ def demo3(level=15):
 #demo2()
 
 
-def create_animated_gif(maxRecursionLevel=7, mfilename='draggon_curve'):
+def create_animated_gif(maxRecursionLevel=7, plotTerDragon=False, filename='draggon_curve'):
     generateLevel = lambda x:list(range(x))+[x-i-2 for i in range(x-1)]
     cmd = 'convert -antialias -density 100 -delay 60 '
     for level in generateLevel(maxRecursionLevel + 1):
-        cmd += mfilename + '_' + '{0:03d}'.format(level) + '.png '
-    cmd += mfilename + '.gif'
+        cfilename = filename + '_' + '{0:03d}'.format(level) + '.png'
+        dragon_curve_plot(level=level, plotTerDragon=plotTerDragon, showAllLevel=False, filename=cfilename)
+        cmd += cfilename + ' '
+    cmd += filename + '.gif'
 
 
-if __name__=='__main__':
+def main():
     import argparse
     parser = argparse.ArgumentParser(description='Generate a dragon curve')
     parser.add_argument('level', type=int,help='number of recursion level. Reasonnable value is 15')
     parser.add_argument('-a','--all', action='store_true', help='boolean used to display all levels')
     parser.add_argument('-t','--ter', action='store_true', help='boolea used to create a terdragon')
+    parser.add_argument('-g','--gif', action='store_true', help='boolea used to create a gif')
     args = parser.parse_args()
-    demo(args.level, plotTerDragon=args.ter, showAllLevel=args.all)
+    if args.gif:
+        create_animated_gif(maxRecursionLevel=args.level, plotTerDragon=args.ter, filename='draggon_curve')
+    else:
+        dragon_curve_plot(args.level, plotTerDragon=args.ter, showAllLevel=args.all)
     # demo3(level=args.level)
+
+
+if __name__=='__main__':
+    main()
