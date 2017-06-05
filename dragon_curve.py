@@ -6,6 +6,10 @@
 # This is another form of space filling curve
 #
 
+# This script offers the possibilty to create animated gif to
+# show the construction of the fractal curve.
+# This gif is created with convert program from imagemagick
+
 #
 # Level | # points    | # line segments
 #--------------------------------------
@@ -19,15 +23,22 @@
 import numpy as np
 
 
+# Creates a rotation matrix from angle
 rot = lambda x: np.matrix([[np.cos(x), -np.sin(x)], [np.sin(x), np.cos(x)]])
+
+# Define transformation pattern for dragon curve
 f1 = lambda x, y: 1 / np.sqrt(2) * rot(+ np.pi / 4) * np.matrix([[x], [y]])
 f2 = lambda x, y: 1 / np.sqrt(2) * rot(- np.pi / 4) * np.matrix([[x], [y]])
 
+# Define transformation pattern for Terdragon
 ft1 = lambda x, y: 1 / np.sqrt(3) * rot(+ 1 * np.pi / 6) * np.matrix([[x], [y]])
 ft2 = lambda x, y: 1 / np.sqrt(3) * rot(- 1 * np.pi / 6) * np.matrix([[x], [y]])
 
 
 def rotVec(angle, x, y):
+    '''
+    returns rotated input vectors x and y from angle
+    '''
     res = np.dot(rot(angle), np.vstack([np.asarray(x), np.asarray(y)]))
     return np.asarray(res)[0].tolist(), np.asarray(res)[1].tolist()
 
@@ -58,14 +69,16 @@ def dragon_curve(level=3):
 
 
 def dragon_ter_curve(level=3):
+    '''
+    level recursion level
+    '''
     x, y = [0, 1], [0, 0]
     res = {0: [x,y]}
     for j in range(level):
         x_new, y_new = [], []
         for i in range(len(x) - 1):
             dx, dy = x[i + 1] - x[i], y[i + 1] - y[i]
-            d1 = ft1(dx, dy)
-            d2 = ft2(dx, dy)
+            d1, d2 = ft1(dx, dy), ft2(dx, dy)
             x_new.extend([x[i], x[i] + d1[0, 0], x[i] + d2[0, 0]])
             y_new.extend([y[i], y[i] + d1[1, 0], y[i] + d2[1, 0]])
         x_new.append(x[-1])
@@ -76,7 +89,12 @@ def dragon_ter_curve(level=3):
 
 
 
-def dragon_curve_plot(level=15, plotTerDragon=False, showAllLevel=False, filename=None):
+def dragon_curve_plot(level=15, **kwargs):
+    tile = kwargs.get('tile', False)
+    plotTerDragon = kwargs.get('plotTerDragon', False)
+    showAllLevel = kwargs.get('showAllLevel', False)
+    filename = kwargs.get('filename', None)
+    grid = kwargs.get('grid', False)
     import matplotlib.pyplot as plt
     fig, ax = plt.subplots()
     if plotTerDragon:
@@ -85,81 +103,72 @@ def dragon_curve_plot(level=15, plotTerDragon=False, showAllLevel=False, filenam
         res = dragon_curve(level=level)
     if showAllLevel:
         for k in res:
-            ax.plot(res[k][0], res[k][1])
+            ax.plot(res[k][0], res[k][1], linewidth=0.5, color='k')
     else:
-        x, y = np.asarray(res[level][0]), np.asarray(res[level][1])
-        for i in range(4):
-            xr,yr = rotVecAsNp(np.pi/2*i,x,y)
-            for k in range(-2,2):
-                for k2 in range(-2,2):
-                    xoff,yoff = rotVecAsNp(i * np.pi / 2, 2* k + k2 * 0, 2* k2)
-                    ax.plot(xoff+xr, yoff+yr, linewidth=0.5, color = 'C' + str(i))
-                    xoff,yoff = rotVecAsNp(i * np.pi / 2, 2* k + 1 + k2 * 0, 2* k2+1)
-                    ax.plot(xoff+xr, yoff+yr, linewidth=0.5, color = 'C' + str(i))
+        if tile:
+            x, y = np.asarray(res[level][0]), np.asarray(res[level][1])
+            if plotTerDragon:
+                for i in range(3):
+                    xr, yr = rotVecAsNp(i * np.pi / 3, x, y)
+                    for k in range(-2, 2):
+                        for k2 in range(-2, 3):
+                            xoff, yoff = rotVecAsNp(i * np.pi / 3, k + k2 * -0.5, k2 * np.sqrt(3)/2)
+                            ax.plot(xoff + xr, yoff + yr, linewidth=0.5, color='C' + str(i))
+            else:
+                for i in range(4):
+                    xr, yr = rotVecAsNp(np.pi / 2 * i, x, y)
+                    for k in range(-2, 2):
+                        for k2 in range(-2, 2):
+                            xoff, yoff = rotVecAsNp(i * np.pi / 2, 2 * k + k2 * 0, 2 * k2)
+                            ax.plot(xoff + xr, yoff + yr, linewidth=0.5, color='C' + str(i))
+                            xoff, yoff = rotVecAsNp(i * np.pi / 2, 2 * k + 1 + k2 * 0, 2 * k2 + 1)
+                            ax.plot(xoff + xr, yoff + yr, linewidth=0.5, color='C' + str(i))
+        else:
+            ax.plot(res[level][0], res[level][1], linewidth=0.5, color='k')
 
-    plt.grid(True)
     plt.axis('equal')
-    plt.show()
+    if grid:
+        plt.grid(True)
+    else:
+        plt.axis('off')
     if filename:
         plt.savefig(filename)
+        plt.close()
+    else:
+        plt.show()
 
 
-def demo2(level=15):
-    res = dragon_curve(level=level)
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots()
-    x, y = np.asarray(res[level][0]), np.asarray(res[level][1])
-    ax.plot(x,y, linewidth=0.5)
-    plt.axis('equal')
-    plt.show()
-
-
-def demo3(level=15):
-    res = dragon_ter_curve(level=level)
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots()
-    x, y = np.asarray(res[level][0]), np.asarray(res[level][1])
-    ax.plot(x+1, y, linewidth=0.5, color='C'+str(0))
-    for i in range(3):
-        xr,yr = rotVecAsNp(i * np.pi / 3, x, y)
-        # ax.plot(xr, yr, linewidth=0.5, color='C'+str(i))
-        for k in range(-2, 2):
-            for k2 in range(-2, 3):
-            #xoff,yoff = rotVecAsNp(i * np.pi / 3, k * -0.5, k * np.sqrt(3)/2)
-            #ax.plot(xoff+xr, yoff+yr, linewidth=0.5, color = 'C' + str(i))
-                xoff,yoff = rotVecAsNp(i * np.pi / 3, k + k2 * -0.5, k2 * np.sqrt(3)/2)
-                ax.plot(xoff+xr, yoff+yr, linewidth=1, color = 'C' + str(i))
-    plt.grid(True)
-    plt.axis('equal')
-    plt.show()
-
-#demo()
-#demo2()
-
-
-def create_animated_gif(maxRecursionLevel=7, plotTerDragon=False, filename='draggon_curve'):
-    generateLevel = lambda x:list(range(x))+[x-i-2 for i in range(x-1)]
-    cmd = 'convert -antialias -density 100 -delay 60 '
+def create_animated_gif(maxRecursionLevel=7, filename='dragon_curve.gif', **kwargs):
+    plotTerDragon = kwargs.get('plotTerDragon', False)
+    tile = kwargs.get('tile', False)
+    grid = kwargs.get('grid', False)
+    import subprocess
+    generateLevel = lambda x: list(range(x)) + [x - i - 2 for i in range(x - 1)]
+    cmd = 'convert -antialias -density 100 -delay 120 '
     for level in generateLevel(maxRecursionLevel + 1):
         cfilename = filename + '_' + '{0:03d}'.format(level) + '.png'
-        dragon_curve_plot(level=level, plotTerDragon=plotTerDragon, showAllLevel=False, filename=cfilename)
         cmd += cfilename + ' '
-    cmd += filename + '.gif'
+        dragon_curve_plot(level=level, plotTerDragon=plotTerDragon, showAllLevel=False, filename=cfilename, tile=tile, grid=grid)
+    cmd += filename
+    print(cmd)
+    subprocess.check_output(cmd.split(' '))
 
 
 def main():
     import argparse
     parser = argparse.ArgumentParser(description='Generate a dragon curve')
-    parser.add_argument('level', type=int,help='number of recursion level. Reasonnable value is 15')
-    parser.add_argument('-a','--all', action='store_true', help='boolean used to display all levels')
-    parser.add_argument('-t','--ter', action='store_true', help='boolea used to create a terdragon')
-    parser.add_argument('-g','--gif', action='store_true', help='boolea used to create a gif')
+    pa = parser.add_argument
+    pa('level', type=int, help='number of recursion level. Reasonnable value is 15')
+    pa('-t', '--ter', action='store_true', help='boolean used to create a terdragon')
+    pa('--tile', action='store_true', help='boolean used to create a tiling of the generated curve')
+    pa('-a', '--all', action='store_true', help='boolean used to display all levels (disable when tiling)')
+    pa('-o', '--output', default=None, help='name of the generated file. If not provided, result will display on screen')
+    pa('-g', '--grid', action='store_true', help='boolean used to display grid')
     args = parser.parse_args()
-    if args.gif:
-        create_animated_gif(maxRecursionLevel=args.level, plotTerDragon=args.ter, filename='draggon_curve')
+    if args.output and args.output.lower().endswith('gif'):
+        create_animated_gif(maxRecursionLevel=args.level, plotTerDragon=args.ter, filename=args.output, grid=args.grid, tile=args.tile)
     else:
-        dragon_curve_plot(args.level, plotTerDragon=args.ter, showAllLevel=args.all)
-    # demo3(level=args.level)
+        dragon_curve_plot(args.level, plotTerDragon=args.ter, showAllLevel=args.all, filename=args.output, grid=args.grid, tile=args.tile)
 
 
 if __name__=='__main__':
