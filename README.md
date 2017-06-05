@@ -7,4 +7,6 @@
     python dragon_curve.py 10 -t --tile -o dragon_curve_ter_10_tile.gif
 
 
-![Alt text](https://upload.wikimedia.org/wikipedia/commons/6/67/DragonCurve_animation.gif)
+![Alt text](https://commons.wikimedia.org/wiki/File:Dragon_curve_15.gif)
+
+![Alt text](https://commons.wikimedia.org/wiki/File:Dragon_curve_10_tile.gif)
