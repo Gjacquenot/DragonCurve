@@ -1,15 +1,18 @@
+# This script generates dragon curves.
+#
 # Dragon curve is a fractal curve created recursively with a simple pattern
 # It is a finite space filling curve
-
+#
 # An option is given to create a terdragon curve, that uses a different
 # pattern, and creates three segments for each existing segment
 # This is another form of space filling curve
 #
-
-# This script offers the possibilty to create animated gif to
+# This script also offers the possibilty to create animated gif to
 # show the construction of the fractal curve.
 # This gif is created with convert program from imagemagick
-
+#
+# For the classical dragon curve, here is the evolution of
+# numbers of points and line segments
 #
 # Level | # points    | # line segments
 #--------------------------------------
@@ -19,6 +22,18 @@
 # 3     | 9           | 8
 # .     | .           | .
 # n     | 2**(n+1)+1  | 2**(n+1)
+#
+# This script requires numpy. matplotlib is also required to
+# display images.
+#
+# Examples of use:
+#
+# python dragon_curve.py --help
+# python dragon_curve.py 15 -o dragon_curve_15.gif
+# python dragon_curve.py 10 --tile -o dragon_curve_10_tile.gif
+# python dragon_curve.py 15 -t -o dragon_curve_ter_15.gif
+# python dragon_curve.py 10 -t --tile -o dragon_curve_ter_10_tile.gif
+
 
 import numpy as np
 
@@ -49,6 +64,10 @@ def rotVecAsNp(angle, x, y):
 
 
 def dragon_curve(level=3):
+    '''
+    returns a dictionnary containing the dragon curve for each level
+    :param: level maximum level of recursion
+    '''
     x, y = [0, 1], [0, 0]
     res = {0: [x,y]}
     for j in range(level):
@@ -70,7 +89,8 @@ def dragon_curve(level=3):
 
 def dragon_ter_curve(level=3):
     '''
-    level recursion level
+    returns a dictionnary containing the terdragon curve for each level
+    :param: level maximum level of recursion
     '''
     x, y = [0, 1], [0, 0]
     res = {0: [x,y]}
@@ -150,7 +170,7 @@ def create_animated_gif(maxRecursionLevel=7, filename='dragon_curve.gif', **kwar
         cmd += cfilename + ' '
         dragon_curve_plot(level=level, plotTerDragon=plotTerDragon, showAllLevel=False, filename=cfilename, tile=tile, grid=grid)
     cmd += filename
-    print(cmd)
+    # print(cmd)
     subprocess.check_output(cmd.split(' '))
 
 
