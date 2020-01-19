@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+<meta charset="UTF-8">
+<body>
+  <p>Dragon curve - The 16 first steps to build a Dragon curve</p>
+  <canvas id="canvas0"></canvas>
+  <canvas id="canvas1"></canvas>
+  <canvas id="canvas2"></canvas>
+  <canvas id="canvas3"></canvas>
+  <canvas id="canvas4"></canvas>
+  <canvas id="canvas5"></canvas>
+  <canvas id="canvas6"></canvas>
+  <canvas id="canvas7"></canvas>
+  <canvas id="canvas8"></canvas>
+  <canvas id="canvas9"></canvas>
+  <canvas id="canvas10"></canvas>
+  <canvas id="canvas11"></canvas>
+  <canvas id="canvas12"></canvas>
+  <canvas id="canvas13"></canvas>
+  <canvas id="canvas14"></canvas>
+  <canvas id="canvas15"></canvas>
+
+  <script type="text/javascript">
+
+    function rot2D(angle) {
+      const c = Math.cos(angle);
+      const s = Math.sin(angle);
+      return [+c, +s, -s, +c];
+    }
+
+    function multiplyMatrix2x2AndPoint(matrix, point) {
+      const x = matrix[0] * point[0] + matrix[1] * point[1];
+      const y = matrix[2] * point[0] + matrix[3] * point[1];
+      return [x, y];
+    }
+
+    // Define transformation pattern for dragon curve
+    // The pattern consists either to rotate CW or CCW a vector and scale it
+    function patternCCW(x, y) {
+      // Apply CCW pattern a vector defined with x and y
+      const k = 1 / Math.sqrt(2);
+      return multiplyMatrix2x2AndPoint(rot2D(+ Math.PI / 4), [k * x, k * y]);
+    }
+
+    function patternCW(x, y) {
+      // Apply CW pattern a vector defined with x and y
+      const k = 1 / Math.sqrt(2);
+      return multiplyMatrix2x2AndPoint(rot2D(- Math.PI / 4), [k * x, k * y]);
+    }
+
+    function pattern(x, y, isCW) {
+      // Apply CW or CCW pattern a vector defined with x and y
+      if (isCW===true)
+      {
+        return patternCCW(x, y);
+      }
+      else
+      {
+        return patternCW(x, y);
+      }
+    }
+
+    function dragoncurve(level) {
+      // Evaluate a dragon curve with a normalized initial segment of length one
+      // Input level defines the number of level of recursion
+      // Level starts at 0
+      // Function outputs a dict of int -> [[x],[y]]
+      let x = [0, 1];
+      let y = [0, 0];
+      let res = {0: [x,y]};
+      for (let j = 1; j < level + 1; j++)
+      {
+        let x_new = [];
+        let y_new = [];
+        for (let i = 0; i < (x.length - 1); i++)
+        {
+          const dx = x[i+1] - x[i];
+          const dy = y[i+1] - y[i];
+          const d = pattern(dx, dy, (i%2)===0);
+          x_new.push(x[i]);
+          x_new.push(x[i] + d[0]);
+          y_new.push(y[i]);
+          y_new.push(y[i] + d[1]);
+        }
+        x_new.push(x[x.length - 1]);
+        y_new.push(y[y.length - 1]);
+        x = x_new;
+        y = y_new;
+        res[j] = [x, y];
+      }
+      return res;
+    }
+
+    function plotdragoncurve(res) {
+      // Plot a normalized dragon curve where each level is drawn in a canvas
+      for (let k = 0; k < max_level; k++)
+      {
+        var canvas = document.getElementById("canvas".concat('', k.toString()));
+        var ctx = canvas.getContext("2d");
+        let scaling = 100;
+        let x_offset = 100;
+        let y_offset = 100;
+        ctx.beginPath();
+        ctx.moveTo(x_offset + scaling * res[k][0][0], y_offset + scaling * res[k][1][0]);
+        for (i = 1; i < res[k][0].length; i++)
+        {
+          ctx.lineTo(x_offset + scaling * res[k][0][i], y_offset + scaling * res[k][1][i]);
+        }
+        ctx.stroke();
+      }
+    }
+
+    const max_level = 16;
+    const res = dragoncurve(max_level);
+    plotdragoncurve(res);
+  </script>
+</body>
+</html>
