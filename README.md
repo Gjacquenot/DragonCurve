@@ -4,6 +4,12 @@ This repository contains elements to create
 [dragon curves](https://en.wikipedia.org/wiki/Dragon_curve),
 that recursive space filling curves.
 
+Two implementations are available:
+
+- a HTML/Javascript one implemented in [index.html](index.html).
+  Result can be seen [here](https://gjacquenot.github.io/DragonCurve)
+- a Python one implemented in [dragon_curve.py](dragon_curve.py).
+
 Here are some command line examples that can be used to
 create the images presented below
 
